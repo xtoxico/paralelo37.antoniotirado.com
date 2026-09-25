@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Taller FIDO2 — Paralelo 37</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'bg-dark': '#0B1120',
+            'primary': '#94A83B',
+            'primary-light': '#b0c25b',
+            'secondary': '#E5A93C',
+            'secondary-dark': '#b8862f',
+            'text-main': '#f8fafc',
+            'text-muted': '#cbd5e1',
+            'danger': '#ef4444'
+          },
+          fontFamily: {
+            sans: ['ui-sans-serif', 'system-ui', 'sans-serif'],
+            mono: ['Fira Code', 'monospace']
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-bg-dark text-text-main m-0 p-0 antialiased min-h-screen">
+  <!-- Grid background for Paralelo 37 style -->
+  <div class="fixed inset-0 pointer-events-none" style="background-image: linear-gradient(rgba(27,42,74, 0.4) 1px, transparent 1px), linear-gradient(90deg, rgba(27,42,74, 0.4) 1px, transparent 1px); background-size: 60px 60px; z-index: -1;"></div>
+  
+  <app-root></app-root>
+</body>
+</html>

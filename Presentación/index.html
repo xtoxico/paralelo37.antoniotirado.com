@@ -639,6 +639,38 @@ app.<span class="function">get</span>(<span class="string">'/auth/users'</span>,
         </div>
     </div>
 
+    <!-- Nuevo Slide: Historia del Contador -->
+    <div class="slide">
+        <h2>¿Por qué un contador? El ataque del clon</h2>
+        <div class="grid-2 mt-4">
+            <div class="card border-danger/30 bg-danger/10 flex flex-col justify-start h-full p-10 shadow-[0_0_30px_rgba(239,68,68,0.15)]">
+                <div class="flex items-center gap-4 mb-6 border-b border-danger/20 pb-4">
+                    <div class="glow-card m-0" style="border-color:var(--danger);color:var(--danger);box-shadow:0 0 15px rgba(239,68,68,0.3);background:rgba(239,68,68,0.1);"><svg class="w-8 h-8"><use href="#icon-skull"></use></svg></div>
+                    <h3 class="text-3xl text-danger !text-left m-0">El Escenario</h3>
+                </div>
+                <p class="text-xl text-text-main m-0 mb-6 text-left leading-relaxed">
+                    Un atacante roba tu llave un rato y en un laboratorio logra extraer la memoria, creando un <strong class="text-danger">clon físico exacto</strong>.
+                </p>
+                <div class="p-5 bg-bg-dark border border-danger/30 rounded-lg">
+                    <p class="text-lg text-text-muted m-0 text-left italic">
+                        Ahora existen dos llaves en el mundo con la misma <span class="text-danger font-bold">clave privada</span>. Las firmas de ambas son matemáticamente idénticas e indistinguibles.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card border-primary/30 bg-primary/10 flex flex-col justify-start h-full p-10 shadow-[0_0_30px_rgba(148,168,59,0.15)] pulse">
+                <div class="flex items-center gap-4 mb-6 border-b border-primary/20 pb-4">
+                    <div class="glow-card m-0"><svg class="w-8 h-8"><use href="#icon-check"></use></svg></div>
+                    <h3 class="text-3xl text-primary-light !text-left m-0">El Cuentakilómetros</h3>
+                </div>
+                <ul class="text-xl text-text-main m-0">
+                    <li>Cada login suma <strong class="text-primary-light">+1</strong> al contador interno de la llave (nunca retrocede).</li>
+                    <li>Tu backend guarda el <strong class="text-primary-light">número más alto</strong> visto de ese usuario (Ej: 102).</li>
+                    <li>Si el atacante usa el clon que copió ayer (que se quedó en 101), el servidor recibe un viaje al pasado (<span class="font-mono text-secondary">101 <= 102</span>) y <strong class="text-secondary">bloquea el acceso</strong> por anomalía.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
     <!-- Slide 18 -->
     <div class="slide">
         <h2>Pausa técnica / El salvavidas de Chrome</h2>

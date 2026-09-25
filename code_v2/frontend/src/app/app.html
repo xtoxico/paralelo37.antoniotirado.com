@@ -1,0 +1,88 @@
+<main class="flex flex-col items-center justify-center min-h-screen p-6 relative">
+  <div class="text-center mb-10 mt-[-10vh]">
+    <h1 class="text-5xl font-extrabold mb-4 bg-gradient-to-r from-secondary to-primary text-transparent bg-clip-text drop-shadow-md">
+      Acceso Paralelo 37
+    </h1>
+    <p class="text-xl text-text-muted font-mono">FIDO2 y WebAuthn</p>
+  </div>
+
+  <div class="bg-[#1B2A4A]/80 backdrop-blur-xl border border-primary/20 rounded-2xl p-10 shadow-[0_20px_25px_-5px_rgba(0,0,0,0.5),_0_0_30px_rgba(148,168,59,0.1)] w-full max-w-md relative z-10">
+    
+    @if (!auth.soportado) {
+      <div class="p-4 bg-danger/20 border border-danger text-danger rounded-lg text-center font-semibold">
+        Este navegador no soporta WebAuthn.<br>Prueba con Chrome, Edge o Safari.
+      </div>
+    }
+    @else if (auth.usuario(); as usuario) {
+      <div class="text-center animate-in fade-in zoom-in duration-500">
+        <div class="inline-flex justify-center items-center w-24 h-24 rounded-full bg-primary/20 border-2 border-primary shadow-[0_0_20px_rgba(148,168,59,0.4)] text-primary mb-6 pulse">
+          <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path></svg>
+        </div>
+        <p class="text-2xl mb-2 text-text-main">Identidad verificada</p>
+        <p class="text-xl text-primary-light font-mono font-bold mb-8 bg-black/30 py-2 px-4 rounded-lg inline-block border border-primary/30">{{ usuario }}</p>
+        <button (click)="auth.salir()" class="w-full py-3 px-6 bg-transparent border border-danger text-danger rounded-lg hover:bg-danger/20 transition-all font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)]">Cerrar Sesión</button>
+      </div>
+    }
+    @else {
+      
+      @if (vista() === 'login') {
+        <div class="flex flex-col gap-6 animate-in slide-in-from-left-4 fade-in duration-300">
+          <h2 class="text-2xl text-center text-text-main font-semibold">Iniciar Sesión</h2>
+          <p class="text-center text-text-muted text-sm -mt-4">El navegador te identificará automáticamente.</p>
+          
+          <button [disabled]="cargando()" (click)="entrar()" class="w-full py-5 px-6 bg-primary/20 border border-primary text-primary-light rounded-xl font-bold text-lg hover:bg-primary/30 hover:shadow-[0_0_20px_rgba(148,168,59,0.4)] transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+            Entrar con Passkey
+          </button>
+          
+          <div class="mt-6 text-center border-t border-primary/20 pt-6">
+            <p class="text-text-muted text-sm mb-2">¿Nuevo por aquí?</p>
+            <button (click)="cambiarVista('registro')" class="text-secondary hover:text-secondary-dark font-bold underline decoration-secondary/50 underline-offset-4 transition-colors">
+              Registrar nueva credencial
+            </button>
+          </div>
+        </div>
+      }
+      
+      @if (vista() === 'registro') {
+        <div class="flex flex-col gap-4 animate-in slide-in-from-right-4 fade-in duration-300">
+          <h2 class="text-2xl text-center text-text-main font-semibold mb-2">Nuevo Registro</h2>
+          
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-primary-light font-mono">Nombre</label>
+            <input #nombre type="text" class="w-full bg-[#0B1120] border border-primary/30 rounded-lg p-3 text-text-main focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="Ej. Alberto" />
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-primary-light font-mono">Apellidos</label>
+            <input #apellidos type="text" class="w-full bg-[#0B1120] border border-primary/30 rounded-lg p-3 text-text-main focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="Ej. García" />
+          </div>
+          
+          <div class="flex flex-col gap-1">
+            <label class="text-sm text-primary-light font-mono">Email (Será tu ID)</label>
+            <input #email type="email" class="w-full bg-[#0B1120] border border-primary/30 rounded-lg p-3 text-text-main focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary shadow-inner" placeholder="correo@ejemplo.com" (keyup.enter)="registrar(email.value, nombre.value, apellidos.value)" />
+          </div>
+          
+          <button [disabled]="cargando()" (click)="registrar(email.value, nombre.value, apellidos.value)" class="w-full mt-4 py-3 px-6 bg-secondary/20 border border-secondary text-secondary rounded-lg font-bold hover:bg-secondary/30 hover:shadow-[0_0_15px_rgba(229,169,60,0.4)] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Crear Passkey
+          </button>
+          
+          <div class="mt-4 text-center">
+            <button (click)="cambiarVista('login')" class="text-text-muted hover:text-text-main transition-colors text-sm underline decoration-text-muted/50 underline-offset-4">
+              ← Volver al login
+            </button>
+          </div>
+        </div>
+      }
+
+    }
+
+    <!-- Errores -->
+    @if (error()) {
+      <div class="mt-6 p-4 bg-danger/10 border border-danger/50 text-danger rounded-lg text-sm text-center shadow-[0_0_10px_rgba(239,68,68,0.2)] animate-in fade-in slide-in-from-top-2">
+        {{ error() }}
+      </div>
+    }
+  </div>
+</main>
