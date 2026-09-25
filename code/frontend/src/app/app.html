@@ -1,0 +1,24 @@
+<main>
+  <h1>Entra sin contraseña</h1>
+
+  <!-- Caso 1: navegador antiguo. Avisamos en vez de fallar sin explicación. -->
+  @if (!auth.soportado) {
+    <p class="error">Este navegador no soporta WebAuthn. Prueba con Chrome, Edge o Safari.</p>
+  }
+  <!-- Caso 2: ya hay sesión. El "as" nos da el nombre sin volver a leer la señal. -->
+  @else if (auth.usuario(); as usuario) {
+    <p class="ok">Hola, <strong>{{ usuario }}</strong>. Has entrado sin escribir ni una contraseña.</p>
+    <button (click)="auth.salir()">Salir</button>
+  }
+  <!-- Caso 3: pantalla inicial. Un campo y dos botones: eso es todo el formulario. -->
+  @else {
+    <input #nombre placeholder="Nombre de usuario" (keyup.enter)="accion('entrar', nombre.value)" />
+    <button [disabled]="cargando()" (click)="accion('registrar', nombre.value)">Registrarme</button>
+    <button [disabled]="cargando()" (click)="accion('entrar', nombre.value)">Entrar</button>
+  }
+
+  <!-- El error solo aparece cuando hay algo que contar. -->
+  @if (error()) {
+    <p class="error">{{ error() }}</p>
+  }
+</main>

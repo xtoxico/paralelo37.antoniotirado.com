@@ -1,0 +1,32 @@
+/* Estilos mínimos: lo importante del taller es el flujo, no el CSS. */
+main {
+  max-width: 28rem;
+  margin: 4rem auto;
+  padding: 0 1rem;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+input,
+button {
+  font-size: 1rem;
+  padding: 0.6rem 1rem;
+  margin: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid #ccc;
+}
+button {
+  cursor: pointer;
+  background: #1a73e8;
+  color: #fff;
+  border: 0;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.error {
+  color: #c5221f;
+}
+.ok {
+  color: #137333;
+}

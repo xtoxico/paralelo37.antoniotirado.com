@@ -1,0 +1,720 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adiós a las contraseñas — FIDO2 y WebAuthn</title>
+    <link rel="stylesheet" href="vendor/dist/reset.css" />
+    <link rel="stylesheet" href="vendor/dist/reveal.css" />
+    <link rel="stylesheet" href="vendor/dist/theme/black.css" />
+    <link rel="stylesheet" href="vendor/dist/plugin/highlight/monokai.css" />
+    <style>
+      :root {
+        --acento: #6ee7b7;
+        --aviso: #fca5a5;
+      }
+      .reveal h1,
+      .reveal h2,
+      .reveal h3 {
+        text-transform: none;
+        letter-spacing: -0.02em;
+      }
+      /* Ajustes de densidad: todo tiene que caber en 960x700 sin recortes. */
+      .reveal h2 {
+        font-size: 1.5em;
+        margin-bottom: 0.45em;
+      }
+      .reveal h3 {
+        font-size: 1em;
+      }
+      .reveal p {
+        margin: 0.45em 0;
+      }
+      .reveal ul,
+      .reveal ol {
+        line-height: 1.35;
+      }
+      .reveal .acento {
+        color: var(--acento);
+      }
+      .reveal .aviso {
+        color: var(--aviso);
+      }
+      .reveal .grande {
+        font-size: 1.75em;
+        font-weight: 700;
+        line-height: 1.1;
+      }
+      .reveal .pie {
+        font-size: 0.5em;
+        opacity: 0.6;
+      }
+      .reveal table {
+        font-size: 0.72em;
+      }
+      .reveal pre {
+        width: 100%;
+        font-size: 0.42em;
+        box-shadow: none;
+      }
+      .reveal .dos {
+        font-size: 0.92em;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.2em;
+        align-items: start;
+        text-align: left;
+      }
+      .reveal .caja {
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 0.5em;
+        padding: 0.6em 0.8em;
+        font-size: 0.78em;
+      }
+      .reveal .caja p {
+        margin: 0.35em 0;
+      }
+      .reveal .lab {
+        background: linear-gradient(135deg, #065f46, #064e3b);
+      }
+      .reveal ul {
+        line-height: 1.5;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="reveal">
+      <div class="slides">
+        <!-- ══════════════ BLOQUE 0 · APERTURA (0:00 – 0:08) ══════════════ -->
+
+        <section data-background-color="#0f172a">
+          <h1>Adiós a las contraseñas</h1>
+          <h3 class="acento">FIDO2 y WebAuthn, del concepto al código<br />(y a tu propia llave de seguridad)</h3>
+          <p class="pie">Antonio Tirado Peña · Paralelo 37 · XauenDevs</p>
+          <aside class="notes">
+            Taller de 2 h. Antes de empezar: que abran el repo y lancen npm install, tarda.
+          </aside>
+        </section>
+
+        <section>
+          <h2>¿Quién soy?</h2>
+          <ul>
+            <li>Antonio Tirado Peña</li>
+            <li>Director de TI en el <span class="acento">Instituto de Innovación, Ciencia y Empresa</span></li>
+            <li>Lidero la innovación en <span class="acento">NormaPro</span></li>
+            <li>Ingeniero Técnico en Informática de Gestión (UJA) · Máster en Digital Product Management</li>
+            <li>Y me gusta el cacharreo: code, servers, IA, IoT…</li>
+          </ul>
+          <aside class="notes">30 segundos. No más. La gente ha venido a teclear.</aside>
+        </section>
+
+        <section>
+          <h2>Qué vamos a hacer hoy</h2>
+          <ol>
+            <li>Entender <strong>por qué</strong> la contraseña está rota</li>
+            <li>Entender <strong>qué</strong> son FIDO2, WebAuthn y CTAP2</li>
+            <li>Entender <strong>cómo</strong> funciona por dentro (criptografía sin dolor)</li>
+            <li class="acento">Programar el backend en Express + TypeScript</li>
+            <li class="acento">Programar el frontend en Angular 22</li>
+            <li>Ver el zoo de autenticadores reales y una YubiKey</li>
+            <li class="acento">Convertir una Raspberry Pi Pico 2 en una llave FIDO2</li>
+          </ol>
+        </section>
+
+        <section data-background-color="#064e3b">
+          <h2>Primero: arranca el entorno</h2>
+          <pre><code class="hljs bash" data-trim>
+git clone &lt;repo-del-taller&gt;
+cd code/backend  &amp;&amp; npm install   # déjalo corriendo
+cd ../frontend   &amp;&amp; npm install   # y esto también
+          </code></pre>
+          <p class="pie">Node 22.22.3 o superior · Chrome o Edge actualizado</p>
+          <aside class="notes">
+            Insistir: npm install AHORA, mientras hablo. Si alguien falla, que levante la mano y
+            seguimos, lo arreglamos en la pausa.
+          </aside>
+        </section>
+
+        <!-- ══════════════ BLOQUE 1 · EL PROBLEMA (0:08 – 0:20) ══════════════ -->
+
+        <section data-background-color="#450a0a">
+          <h2>El problema</h2>
+          <p class="grande">Las contraseñas</p>
+          <aside class="notes">
+            Si al salir de aquí alguien sigue usando el mismo correo y la misma contraseña en todas
+            las webs, no he hecho bien mi trabajo.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Este es Alberto</h2>
+          <div class="dos">
+            <div class="caja">
+              <p>Usa siempre <code>albertthegreat@hotmail.com</code></p>
+              <p>Para no olvidarse, repite su supercontraseña: <code>P4$$w0rd</code></p>
+              <p>Está convencido de que es segura porque «lleva mayúsculas, números y signos raros».</p>
+            </div>
+            <div class="caja">
+              <p class="aviso"><strong>Alberto cree que cambiar la «a» por un «4» es criptografía cuántica.</strong></p>
+              <p>Alberto no es tonto. Alberto es todos nosotros hace diez años.</p>
+            </div>
+          </div>
+          <aside class="notes">Aquí se ríen. Aprovechar el momento para el golpe siguiente.</aside>
+        </section>
+
+        <section>
+          <h2>Y un día…</h2>
+          <p class="grande aviso">You've been pwned</p>
+          <p><a href="https://haveibeenpwned.com/">haveibeenpwned.com</a></p>
+          <aside class="notes">
+            DEMO EN VIVO: meter un correo del público (con permiso) o el mío. Siempre sale algo.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Los siete pecados de la autenticación tradicional</h2>
+          <table>
+            <tr><td><strong>Brechas en terceros</strong></td><td>Un sitio cae y tus datos acaban en un foro por 3 €</td></tr>
+            <tr><td><strong>Reutilización</strong></td><td>Una contraseña para gobernarlas a todas</td></tr>
+            <tr><td><strong>Contraseñas débiles</strong></td><td><code>123456</code>, el cumpleaños, el nombre del perro</td></tr>
+            <tr><td><strong>Fatiga</strong></td><td>Más contraseñas que neuronas libres</td></tr>
+            <tr><td><strong>Resets constantes</strong></td><td>«¿Olvidaste tu contraseña?» — Sí, como siempre</td></tr>
+            <tr><td><strong>Robo de credenciales</strong></td><td>Keyloggers, malware, MITM: si viaja, se puede robar</td></tr>
+            <tr><td><strong>Phishing</strong></td><td>Un email falso que parece «normalito»</td></tr>
+          </table>
+        </section>
+
+        <section data-background-color="#0f172a">
+          <p class="grande">La contraseña no falla por falta de rigor.</p>
+          <p class="grande acento">Falla por diseño.</p>
+          <p>Obliga a que un secreto compartido <strong>viaje</strong> y se <strong>almacene</strong>.</p>
+          <aside class="notes">
+            Esta es LA frase del bloque. Pausa después. Es la bisagra hacia la solución.
+          </aside>
+        </section>
+
+        <!-- ══════════════ BLOQUE 2 · QUÉ ES ESTO (0:20 – 0:32) ══════════════ -->
+
+        <section>
+          <h2>Nota mental</h2>
+          <ul>
+            <li>FIDO2 <strong>no</strong> es un Pokémon.</li>
+            <li>WebAuthn <strong>no</strong> es una red social.</li>
+            <li>CTAP2 <strong>no</strong> es un robot de Star Wars.</li>
+          </ul>
+          <p class="acento">Ya podemos continuar.</p>
+        </section>
+
+        <section>
+          <h2>Los tres nombres</h2>
+          <table>
+            <tr>
+              <td class="acento"><strong>FIDO2</strong></td>
+              <td>Fast Identity Online 2.0. El <em>paraguas</em>: el estándar abierto de autenticación sin contraseñas.</td>
+            </tr>
+            <tr>
+              <td class="acento"><strong>WebAuthn</strong></td>
+              <td>La API del W3C que tu <em>página web</em> llama. Es JavaScript: <code>navigator.credentials</code>.</td>
+            </tr>
+            <tr>
+              <td class="acento"><strong>CTAP2</strong></td>
+              <td>Client To Authenticator Protocol. Cómo el <em>navegador</em> habla con el aparato que guarda las claves.</td>
+            </tr>
+          </table>
+          <p class="pie">FIDO2 = WebAuthn + CTAP2</p>
+        </section>
+
+        <section>
+          <h2>Los tres actores</h2>
+          <table>
+            <tr>
+              <td><strong>Relying Party</strong></td>
+              <td>Tu servidor. El que <em>confía</em> en la firma.</td>
+              <td class="acento">Express.js</td>
+            </tr>
+            <tr>
+              <td><strong>Client</strong></td>
+              <td>Navegador + sistema operativo. Traduce WebAuthn ⇄ CTAP2.</td>
+              <td class="acento">Chrome</td>
+            </tr>
+            <tr>
+              <td><strong>Authenticator</strong></td>
+              <td>Donde vive la clave privada. Nunca sale de ahí.</td>
+              <td class="acento">Touch ID, YubiKey, Pico</td>
+            </tr>
+          </table>
+          <aside class="notes">
+            Dibujar el triángulo en la pizarra si la hay. Insistir: tu servidor NUNCA habla con el
+            autenticador. Siempre a través del navegador.
+          </aside>
+        </section>
+
+        <section>
+          <h2>Ventajas, en cuatro golpes</h2>
+          <div class="dos">
+            <div class="caja">
+              <h3 class="acento">Sin contraseñas</h3>
+              <p>Biometría, PIN local o un trozo de hardware.</p>
+            </div>
+            <div class="caja">
+              <h3 class="acento">Criptografía asimétrica</h3>
+              <p>El servidor nunca conoce ningún secreto.</p>
+            </div>
+            <div class="caja">
+              <h3 class="acento">Resistente al phishing</h3>
+              <p>La credencial está atada a un dominio. Punto.</p>
+            </div>
+            <div class="caja">
+              <h3 class="acento">Multiplataforma</h3>
+              <p>Móvil, escritorio y web, con el mismo estándar.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Puede que no conozcas FIDO2…</h2>
+          <p class="grande acento">pero FIDO2 te conoce a ti<br />desde tu primer Touch ID.</p>
+          <p>Google · GitHub · Microsoft · AWS · Cloudflare · Dropbox · Okta · Apple</p>
+        </section>
+
+        <!-- ══════════════ BLOQUE 3 · CRIPTOGRAFÍA Y FLUJOS (0:32 – 0:45) ══════════════ -->
+
+        <section data-background-color="#1e1b4b">
+          <h2>Criptografía sin dolor</h2>
+          <p>Todo lo que hace falta entender cabe en cinco líneas.</p>
+        </section>
+
+        <section>
+          <h2>El par de claves</h2>
+          <pre><code class="hljs javascript" data-trim data-line-numbers="1-2|4-5|7-8|10-11">
+// 1. El autenticador crea un par ÚNICO para este sitio
+const { privateKey, publicKey } = generateKeyPair();
+
+// 2. La privada NUNCA sale del dispositivo
+//    (la pública sí: se la mandamos al servidor)
+servidor.guardar(usuario, publicKey);
+
+// 3. Para entrar, el autenticador FIRMA un reto
+const firma = privateKey.sign(reto);
+
+// 4. El servidor comprueba la firma con la clave pública
+const valida = publicKey.verify(reto, firma);
+          </code></pre>
+          <aside class="notes">
+            Analogía: la clave pública es un candado abierto que reparto a todo el mundo; la privada
+            es la única llave que lo cierra. Si se filtra mi base de datos, el atacante se lleva una
+            colección de candados abiertos.
+          </aside>
+        </section>
+
+        <section>
+          <h2>¿Por qué esto mata el phishing?</h2>
+          <div class="dos">
+            <div class="caja">
+              <p>Cada credencial se crea para un <strong>rpID</strong> concreto: <code>tubanco.es</code></p>
+              <p>El navegador comprueba el dominio <strong>antes</strong> de pedir la firma.</p>
+            </div>
+            <div class="caja">
+              <p class="aviso">En <code>tubanc0.es</code> el autenticador ni siquiera se despierta.</p>
+              <p>No es que el usuario no se equivoque: es que <strong>no puede</strong> equivocarse.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Y el reto (<em>challenge</em>)</h2>
+          <ul>
+            <li>El servidor genera un valor <strong>aleatorio y nuevo</strong> en cada intento</li>
+            <li>La firma solo vale para <strong>ese</strong> reto</li>
+            <li>Capturar el tráfico de ayer no sirve para entrar hoy</li>
+          </ul>
+          <p class="acento">Esto es lo que se llama protección contra <em>replay</em>.</p>
+        </section>
+
+        <section>
+          <h2>Flujo de REGISTRO</h2>
+          <ol>
+            <li>El usuario escribe su nombre</li>
+            <li>El servidor genera un <strong>reto</strong> y las opciones</li>
+            <li>El navegador llama a <code>navigator.credentials.create()</code></li>
+            <li>El autenticador pide huella/PIN y genera el <strong>par de claves</strong></li>
+            <li>El navegador devuelve la <strong>clave pública</strong> firmada</li>
+            <li>El servidor verifica y la <strong>almacena</strong></li>
+          </ol>
+        </section>
+
+        <section>
+          <h2>Flujo de AUTENTICACIÓN</h2>
+          <ol>
+            <li>El usuario escribe su nombre (o ni eso, con passkeys)</li>
+            <li>El servidor genera un <strong>reto nuevo</strong> + los IDs válidos</li>
+            <li>El navegador llama a <code>navigator.credentials.get()</code></li>
+            <li>El autenticador <strong>firma</strong> el reto con la clave privada</li>
+            <li>El navegador envía la <em>assertion</em>: firma + datos</li>
+            <li>El servidor <strong>verifica la firma</strong> con la clave pública</li>
+          </ol>
+          <aside class="notes">
+            Insistir en la simetría: mismos dos viajes, cambia lo que hace el autenticador en medio.
+            Crear vs firmar.
+          </aside>
+        </section>
+
+        <!-- ══════════════ BLOQUE 4 · LAB BACKEND (0:50 – 1:15) ══════════════ -->
+
+        <section data-background-color="#064e3b">
+          <h2>LAB 1 · Backend</h2>
+          <p class="grande">Express + TypeScript</p>
+          <p>Es más fácil que implementar un registro/login tradicional.<br />Tan fácil que si pestañeas te lo pierdes.</p>
+        </section>
+
+        <section>
+          <h2>Cuatro dependencias y ya</h2>
+          <pre><code class="hljs bash" data-trim>
+npm init -y
+npm i express @simplewebauthn/server
+npm i -D @types/express @types/node typescript
+          </code></pre>
+          <p class="pie">Node 22 ejecuta TypeScript directamente: no hay paso de compilación.</p>
+        </section>
+
+        <section>
+          <h2>La configuración: tres constantes</h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers>
+const rpName = 'Taller FIDO2 — Paralelo 37';  // Lo que ve el usuario
+const rpID   = 'localhost';                    // El dominio que ata la credencial
+const origin = 'http://localhost:4200';        // Desde dónde aceptamos peticiones
+          </code></pre>
+          <p class="aviso">Si <code>rpID</code> y <code>origin</code> no encajan, nada funciona. Es el error número uno.</p>
+        </section>
+
+        <section>
+          <h2>Endpoint 1 · <code>/auth/register/begin</code></h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers="2-9|11-12">
+const opciones = await generateRegistrationOptions({
+  rpName, rpID, userName: usuario,
+  attestationType: 'none',
+  excludeCredentials: registro.credenciales.map(
+    (c) => ({ id: c.id, transports: c.transports })),
+  authenticatorSelection: {
+    residentKey: 'preferred',
+    userVerification: 'preferred',
+  },
+});
+
+registro.reto = opciones.challenge;  // Lo guardamos para el paso 2
+respuesta.json(opciones);
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Endpoint 2 · <code>/auth/register/complete</code></h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers="1-7|9-14">
+const { verified, registrationInfo } = await verifyRegistrationResponse({
+  response: credencialNueva,
+  expectedChallenge: registro.reto,  // ¿firmó ESTE reto?
+  expectedOrigin: origin,            // ¿vino de NUESTRA web?
+  expectedRPID: rpID,                // ¿es para nuestro dominio?
+  requireUserVerification: false,
+});
+
+const { credential } = registrationInfo;
+registro.credenciales.push({
+  id: credential.id,
+  publicKey: Buffer.from(credential.publicKey).toString('base64url'),
+  counter: credential.counter,
+});
+          </code></pre>
+          <p class="acento">Fíjate en lo que guardamos: una clave pública y un número.</p>
+        </section>
+
+        <section>
+          <h2>Endpoints 3 y 4 · el login</h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers="1-6|8-16">
+// begin: un reto NUEVO y qué credenciales valen
+const opciones = await generateAuthenticationOptions({
+  rpID,
+  allowCredentials: registro.credenciales.map(
+    (c) => ({ id: c.id, transports: c.transports })),
+});
+
+// complete: verificar la firma con la clave pública guardada
+const { verified, authenticationInfo } = await verifyAuthenticationResponse({
+  response: firma,
+  expectedChallenge: registro.reto,
+  expectedOrigin: origin,
+  expectedRPID: rpID,
+  credential: { id, publicKey, counter, transports },
+});
+
+credencial.counter = authenticationInfo.newCounter;  // anti-replay
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Y un quinto para la clase</h2>
+          <pre><code class="hljs typescript" data-trim>
+app.get('/auth/users', (_peticion, respuesta) => {
+  respuesta.json(leerBD());
+});
+          </code></pre>
+          <p class="acento">Ábrelo y mira: <strong>no hay ni un solo secreto</strong> ahí dentro.</p>
+          <aside class="notes">
+            DEMO: proyectar usuarios.json. Es el momento «ajá» del taller. Que vean que una filtración
+            de esta base de datos no le sirve de nada a nadie.
+          </aside>
+        </section>
+
+        <!-- ══════════════ BLOQUE 5 · LAB FRONTEND (1:15 – 1:35) ══════════════ -->
+
+        <section data-background-color="#1e3a8a">
+          <h2>LAB 2 · Frontend</h2>
+          <p class="grande">Angular 22</p>
+          <p>Un servicio y un componente. Y me sobra código.</p>
+        </section>
+
+        <section>
+          <h2>Arrancar el proyecto</h2>
+          <pre><code class="hljs bash" data-trim>
+ng new frontend --style=css --ssr=false --skip-tests
+cd frontend
+npm i @simplewebauthn/browser
+ng generate service auth
+          </code></pre>
+          <p class="pie">Angular 22 arranca <em>zoneless</em> por defecto y usa <code>@Service()</code> en vez de <code>@Injectable()</code>.</p>
+        </section>
+
+        <section>
+          <h2>El servicio: registrar</h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers="2-4|6|8">
+async registrar(usuario: string): Promise&lt;void&gt; {
+  // 1) Pedimos el reto al backend
+  const opciones = await this.post&lt;...&gt;('register/begin', { usuario });
+
+  // 2) El navegador abre el diálogo nativo y nace el par de claves
+  const credencial = await startRegistration({ optionsJSON: opciones });
+
+  // 3) Mandamos al servidor solo la clave pública firmada
+  await this.post('register/complete', { usuario, credencial });
+}
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>El servicio: entrar</h2>
+          <pre><code class="hljs typescript" data-trim>
+async entrar(usuario: string): Promise&lt;void&gt; {
+  const opciones = await this.post&lt;...&gt;('login/begin', { usuario });
+  const credencial = await startAuthentication({ optionsJSON: opciones });
+  await this.post('login/complete', { usuario, credencial });
+  this.usuario.set(usuario);
+}
+          </code></pre>
+          <p class="acento">Exactamente la misma forma. Cambia <code>create</code> por <code>get</code>.</p>
+        </section>
+
+        <section>
+          <h2>La plantilla entera</h2>
+          <pre><code class="hljs html" data-trim>
+&lt;input #nombre placeholder="Nombre de usuario" /&gt;
+&lt;button (click)="accion('registrar', nombre.value)"&gt;Registrarme&lt;/button&gt;
+&lt;button (click)="accion('entrar', nombre.value)"&gt;Entrar&lt;/button&gt;
+          </code></pre>
+          <p class="grande acento">Busca el campo «contraseña».</p>
+          <aside class="notes">Pausa. No está. Esa es toda la charla en una diapositiva.</aside>
+        </section>
+
+        <section>
+          <h2>¿No tienes huella ni Windows Hello?</h2>
+          <ol>
+            <li>Abre las DevTools de Chrome</li>
+            <li>Menú de los tres puntos → <em>More tools</em> → <strong>WebAuthn</strong></li>
+            <li><em>Enable virtual authenticator environment</em></li>
+            <li>Añade uno con <code>ctap2</code> + <em>resident keys</em> + <em>user verification</em></li>
+          </ol>
+          <p class="acento">Hace exactamente lo mismo, por software. Nadie se queda fuera.</p>
+        </section>
+
+        <!-- ══════════════ BLOQUE 6 · EL ZOO (1:35 – 1:47) ══════════════ -->
+
+        <section data-background-color="#0f172a">
+          <h2>El zoo de autenticadores</h2>
+          <p>Lo que la gente ya lleva en el bolsillo.</p>
+        </section>
+
+        <section>
+          <h2>De plataforma · vienen en el aparato</h2>
+          <table>
+            <tr><td><strong>Windows Hello</strong></td><td>Cara o PIN respaldado por el TPM</td></tr>
+            <tr><td><strong>Apple Touch ID</strong></td><td>Huella, con la clave en el Secure Enclave</td></tr>
+            <tr><td><strong>Apple Face ID</strong></td><td>Cara, mismo enclave seguro</td></tr>
+            <tr><td><strong>Android Biometrics</strong></td><td>Huella o cara sobre el StrongBox / TEE</td></tr>
+          </table>
+          <p class="pie">En el código: <code>authenticatorAttachment: 'platform'</code></p>
+        </section>
+
+        <section>
+          <h2>Cross-platform · se enchufan</h2>
+          <table>
+            <tr><td><strong>YubiKey y similares</strong></td><td>USB-A, USB-C, NFC, Lightning</td></tr>
+            <tr><td><strong>Llaves NFC / Bluetooth</strong></td><td>Toque físico para validar</td></tr>
+            <tr><td><strong>Tu propio móvil</strong></td><td>Un Android moderno hace de llave para tu PC vía Bluetooth</td></tr>
+          </table>
+          <p class="pie">En el código: <code>authenticatorAttachment: 'cross-platform'</code></p>
+          <aside class="notes">DEMO: enseñar la YubiKey, pasarla por las filas mientras hablo.</aside>
+        </section>
+
+        <section>
+          <h2>Passkeys: la parte que todo el mundo confunde</h2>
+          <div class="dos">
+            <div class="caja">
+              <h3 class="acento">Sincronizada</h3>
+              <p>Vive en tu cuenta de Google / iCloud / gestor de contraseñas.</p>
+              <p>Cambias de móvil y sigue ahí. Cómoda.</p>
+              <p><code>credentialBackedUp: true</code></p>
+            </div>
+            <div class="caja">
+              <h3 class="acento">Atada al dispositivo</h3>
+              <p>Nace y muere en ese aparato. No se copia jamás.</p>
+              <p>Pierdes la llave, pierdes la credencial. Segura.</p>
+              <p><code>credentialDeviceType: 'singleDevice'</code></p>
+            </div>
+          </div>
+          <p class="pie">El backend recibe ambos flags en el registro. Guárdalos: te dirán a qué te enfrentas.</p>
+        </section>
+
+        <!-- ══════════════ BLOQUE 7 · PICO FIDO (1:47 – 1:57) ══════════════ -->
+
+        <section data-background-color="#4c1d95">
+          <h2>¿Y si nos hacemos la llave?</h2>
+          <p class="grande">Raspberry Pi Pico 2 · RP2350</p>
+          <p class="pie">Firmware libre: Pico FIDO</p>
+        </section>
+
+        <section>
+          <h2>Flashearla: tres pasos</h2>
+          <ol>
+            <li>Descargar el <code>.uf2</code> de <a href="https://www.picokeys.com/pico-fido/">picokeys.com/pico-fido</a></li>
+            <li>Conectar la placa manteniendo pulsado <strong>BOOTSEL</strong></li>
+            <li>Arrastrar el fichero a la unidad USB que aparece</li>
+          </ol>
+          <p class="acento">Se reinicia y el sistema la ve como una llave de seguridad. Sin drivers.</p>
+        </section>
+
+        <section>
+          <h2>Y ahora, el momento de la verdad</h2>
+          <p class="grande acento">La registramos contra nuestra propia demo.</p>
+          <p>Sin cambiar <strong>una sola línea</strong> de código.</p>
+          <aside class="notes">
+            DEMO EN VIVO. Registrar usuario con la Pico. Luego abrir /auth/users y enseñar el
+            credentialId y el transport 'usb'. Llevar DOS placas y el vídeo de respaldo.
+          </aside>
+        </section>
+
+        <section>
+          <h2>¿Por qué RP2350 y no RP2040?</h2>
+          <div class="dos">
+            <div class="caja">
+              <h3 class="acento">RP2350 / ESP32-S3</h3>
+              <p>Secure Boot y Secure Lock.</p>
+              <p>Clave maestra en memoria OTP que cifra las credenciales.</p>
+              <p>La flash no se puede volcar.</p>
+            </div>
+            <div class="caja">
+              <h3 class="aviso">RP2040</h3>
+              <p>Sin esa protección.</p>
+              <p>Quien te robe la placa puede volcar la flash y sacar las claves privadas.</p>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <h2>Entonces, ¿para qué pagar una YubiKey?</h2>
+          <p class="grande acento">La matemática es idéntica.<br />Lo que compras es que nadie pueda abrir la caja.</p>
+          <p>Elemento seguro certificado, resistencia física a ataques, cadena de attestation reconocida.</p>
+        </section>
+
+        <section>
+          <h2>Y aquí conecta con tu backend</h2>
+          <pre><code class="hljs typescript" data-trim data-line-numbers>
+attestationType: 'none'    // nuestra llave casera funciona
+attestationType: 'direct'  // el servidor puede exigir certificado de fabricante
+          </code></pre>
+          <ul>
+            <li>Pico FIDO hace <strong>self-attestation</strong>: no tiene cadena de fabricante reconocida</li>
+            <li>Un banco que valide el <strong>AAGUID</strong> contra los metadatos de la FIDO Alliance <span class="aviso">la rechazará</span></li>
+          </ul>
+          <p class="acento">Ese parámetro que llevas media hora copiando sin pensar: para esto sirve.</p>
+        </section>
+
+        <section>
+          <h2>Bonus: la semilla de 24 palabras</h2>
+          <p>Pico FIDO permite respaldar el dispositivo y restaurarlo en otra placa.</p>
+          <p class="acento">Las llaves comerciales <strong>no</strong> dejan hacer esto, por diseño.</p>
+          <p>Allí la única estrategia es registrar dos llaves por cuenta.</p>
+        </section>
+
+        <!-- ══════════════ BLOQUE 8 · REALIDAD Y CIERRE (1:57 – 2:00) ══════════════ -->
+
+        <section data-background-color="#0f172a">
+          <h2>Antes de llevártelo a producción</h2>
+        </section>
+
+        <section>
+          <h2>Lo que hay que resolver sí o sí</h2>
+          <table>
+            <tr><td><strong>Recuperación</strong></td><td>¿Qué pasa si pierde el móvil? Registra <em>siempre</em> más de una credencial</td></tr>
+            <tr><td><strong>rpID vs origin</strong></td><td><code>rpID</code> es el dominio; <code>origin</code> la URL completa. Y subdominios</td></tr>
+            <tr><td><strong>HTTPS</strong></td><td>Obligatorio. La única excepción es <code>localhost</code></td></tr>
+            <tr><td><strong>signCount</strong></td><td>Guárdalo y compáralo: detecta llaves clonadas</td></tr>
+            <tr><td><strong>Persistencia</strong></td><td>Nuestro JSON es didáctico. En serio: una base de datos</td></tr>
+            <tr><td><strong>Sesión</strong></td><td>FIDO2 te autentica. La cookie o el JWT los pones tú</td></tr>
+          </table>
+        </section>
+
+        <section>
+          <h2>Y lo que FIDO2 <span class="aviso">no</span> arregla</h2>
+          <ul>
+            <li>Malware ya instalado en el dispositivo de la persona</li>
+            <li>Secuestro de sesión <em>después</em> del login</li>
+            <li>Un backend mal programado</li>
+            <li>Que el usuario tenga tres dispositivos y ninguno a mano</li>
+          </ul>
+          <p class="acento">Resuelve el problema de las credenciales. No todos los problemas.</p>
+        </section>
+
+        <section>
+          <h2>Recursos</h2>
+          <ul>
+            <li><a href="https://www.w3.org/TR/webauthn-3/">Especificación WebAuthn del W3C</a></li>
+            <li><a href="https://fidoalliance.org/">FIDO Alliance</a></li>
+            <li><a href="https://simplewebauthn.dev/">SimpleWebAuthn — docs</a></li>
+            <li><a href="https://webauthn.io/">webauthn.io — banco de pruebas</a></li>
+            <li><a href="https://passkeys.dev/">passkeys.dev</a></li>
+            <li><a href="https://www.picokeys.com/pico-fido/">Pico FIDO</a></li>
+          </ul>
+        </section>
+
+        <section data-background-color="#0f172a">
+          <p class="grande">El futuro no es sin contraseñas…</p>
+          <p class="grande acento">es con autenticación que por fin está a la altura de las personas.</p>
+          <p class="pie">
+            Antonio Tirado Peña · yosoy@antoniotirado.com<br />
+            linkedin.com/in/antoniotiradopena · github.com/xtoxico · normapro.es
+          </p>
+        </section>
+      </div>
+    </div>
+
+    <script src="vendor/dist/reveal.js"></script>
+    <script src="vendor/dist/plugin/highlight.js"></script>
+    <script src="vendor/dist/plugin/notes.js"></script>
+    <script>
+      Reveal.initialize({
+        hash: true,
+        slideNumber: 'c/t',
+        transition: 'fade',
+        plugins: [RevealHighlight, RevealNotes],
+      });
+    </script>
+  </body>
+</html>

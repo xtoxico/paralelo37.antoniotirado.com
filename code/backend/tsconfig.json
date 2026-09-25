@@ -1,0 +1,17 @@
+{
+  // Node 22 ejecuta TypeScript directamente borrando los tipos, así que este fichero
+  // NO se usa para compilar: solo sirve para que el editor sepa qué esperar.
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "strict": true,
+    "noEmit": true,
+    // Obligatorio cuando Node borra los tipos en caliente: prohíbe sintaxis no borrable.
+    "erasableSyntaxOnly": true,
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "skipLibCheck": true
+  },
+  "include": ["src"]
+}

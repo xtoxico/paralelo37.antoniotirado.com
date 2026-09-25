@@ -1,0 +1,19 @@
+{
+  "name": "taller-fido2-backend",
+  "version": "1.0.0",
+  "description": "Backend del taller FIDO2/WebAuthn de Paralelo 37",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node --experimental-strip-types --watch src/servidor.ts"
+  },
+  "dependencies": {
+    "@simplewebauthn/server": "^14.0.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
+  }
+}
