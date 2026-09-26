@@ -51,9 +51,17 @@ type Usuario = { reto: string; nombre?: string; apellidos?: string; credenciales
 
 let retoGlobalLogin = ''; // Guardamos el reto temporalmente para el login sin usuario
 
-/** Lee el fichero completo; si todavía no existe, arrancamos con un objeto vacío. */
-const leerBD = (): Record<string, Usuario> =>
-  existsSync(FICHERO) ? JSON.parse(readFileSync(FICHERO, 'utf8')) : {};
+/** Lee el fichero completo; si no existe o está vacío, arrancamos con un objeto vacío. */
+const leerBD = (): Record<string, Usuario> => {
+  if (!existsSync(FICHERO)) return {};
+  try {
+    const contenido = readFileSync(FICHERO, 'utf8').trim();
+    return contenido ? JSON.parse(contenido) : {};
+  } catch (error) {
+    console.error(`No se pudo leer ${FICHERO}, se usa una base de datos vacía:`, error);
+    return {};
+  }
+};
 
 /** Vuelca todo a disco con sangrado, para que sea legible al proyectarlo. */
 const guardarBD = (bd: Record<string, Usuario>) =>
